@@ -3,7 +3,8 @@
 #' @param group place variable
 #' @param cols columns to be extracted
 #' @return Data set of recent observations of selected variables
-#' @import tidyverse
+#' @import dplyr
+#' @importFrom tidyselect all_of
 #' @export
 #' @examples
 #' \dontrun{
@@ -21,7 +22,7 @@ extract_latest <- function(dat, group = place, cols = c("total_tests", "tpr", "d
 
   if ("India" %in% out[[paste0(substitute(group))]]) {
 
-    out[[paste0(substitute(group))]] <- recode(out[[paste0(substitute(group))]],
+    out[[paste0(substitute(group))]] <- dplyr::recode(out[[paste0(substitute(group))]],
                                                "India" = "National estimate")
 
   }

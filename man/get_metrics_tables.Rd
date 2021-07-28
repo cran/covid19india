@@ -4,12 +4,14 @@
 \alias{get_metrics_tables}
 \title{Create metrics tables}
 \usage{
-get_metrics_tables(seed = 46342, top20 = NULL)
+get_metrics_tables(seed = 46342, top20 = NULL, corr_check = TRUE)
 }
 \arguments{
 \item{seed}{set seed}
 
 \item{top20}{Vector of state abbreviations for top 20 table}
+
+\item{corr_check}{Check for data corrections of X-times magnitude. Default is \code{TRUE}}
 }
 \value{
 Creates metrics tables for use in covind19.org

@@ -2,7 +2,7 @@
 #' @param path The URL path for the data. Default: `https://api.covid19india.org/data.json`
 #' @param raw Pull raw unaltered data. Default is `FALSE`
 #' @return Pulls the time-series test data directly from covid19india.org.
-#' @import tidyverse
+#' @import dplyr
 #' @import httr
 #' @importFrom janitor clean_names
 #' @importFrom stringr word
@@ -44,7 +44,7 @@ get_nat_tests <- function(
       dplyr::arrange(date) %>%
       dplyr::mutate(
         daily_tests = total_tests - dplyr::lag(total_tests),
-        ppt         = total_tests / (pop %>% dplyr::filter(place == "India") %>% dplyr::pull(population))
+        ppt         = total_tests / (covid19india::pop %>% dplyr::filter(place == "India") %>% dplyr::pull(population))
       )
 
   }

@@ -35,7 +35,10 @@ get_state_tests <- function(
       ) %>%
       dplyr::ungroup() %>%
       dplyr::select(place, date, daily_tests, total_tests) %>%
-      dplyr::left_join(pop %>% dplyr::select(-abbrev) %>% dplyr::distinct(), by = "place") %>%
+      dplyr::left_join(covid19india::pop %>%
+                         dplyr::select(-abbrev) %>%
+                         dplyr::distinct(),
+                       by = "place") %>%
       dplyr::mutate(ppt = total_tests / population) %>%
       dplyr::select(-population)
 

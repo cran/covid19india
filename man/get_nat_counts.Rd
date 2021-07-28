@@ -6,13 +6,16 @@
 \usage{
 get_nat_counts(
   path = "https://api.covid19india.org/csv/latest/case_time_series.csv",
-  raw = FALSE
+  raw = FALSE,
+  corr_check = FALSE
 )
 }
 \arguments{
 \item{path}{The URL path for the data. Default: https://api.covid19india.org/csv/latest/case_time_series.csv}
 
-\item{raw}{Pull raw unaltered data. Default is FALSE}
+\item{raw}{Pull raw unaltered data. Default is \code{FALSE}}
+
+\item{corr_check}{Check for data correction. Default is \code{FALSE}}
 }
 \value{
 Pulls the time-series case, death, and recovered data directly from covid19india.org.

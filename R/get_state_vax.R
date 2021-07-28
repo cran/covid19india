@@ -40,10 +40,8 @@ get_state_vax <- function(
       dplyr::mutate(
         place = dplyr::case_when(place == "Total" ~ "India", T ~ place)
       ) %>%
-      dplyr::left_join(pop %>%
+      dplyr::left_join(covid19india::pop %>%
                          dplyr::select(-abbrev) %>%
-                         dplyr::add_row(place = "Dadra and Nagar Haveli and Daman and Diu",
-                                        population = 3.44e5 + 2.43e5) %>%
                          distinct(),
                        by = "place") %>%
       dplyr::mutate(

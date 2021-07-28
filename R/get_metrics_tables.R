@@ -1,10 +1,12 @@
 #' Create metrics tables
 #' @param seed set seed
 #' @param top20 Vector of state abbreviations for top 20 table
+#' @param corr_check Check for data corrections of X-times magnitude. Default is `TRUE`
 #' @return Creates metrics tables for use in covind19.org
 #' @import gt
-#' @import tidyverse
+#' @import dplyr
 #' @import cli
+#' @importFrom tidyr drop_na
 #' @importFrom glue glue
 #' @importFrom janitor clean_names
 #' @importFrom scales col_bin
@@ -19,17 +21,17 @@
 #' tabs$full
 #' }
 
-get_metrics_tables <- function(seed = 46342, top20 = NULL) {
+get_metrics_tables <- function(seed = 46342, top20 = NULL, corr_check = TRUE) {
 
   cli::cli_alert_info("getting data...")
 
   set.seed(set_seed <- seed)
   today           <- Sys.Date() - 1
-  dat             <- get_all_data() %>% dplyr::filter(date <= today)
+  dat             <- get_all_data(corr_check = corr_check) %>% dplyr::filter(date <= today)
   cfr1            <- get_cfr(dat) %>% distinct()
   r_est           <- get_r_est(dat)
   tp              <- dat
-  india_state_pop <- pop
+  india_state_pop <- covid19india::pop
 
   cli::cli_alert_success("data load success!!")
 
@@ -54,26 +56,26 @@ get_metrics_tables <- function(seed = 46342, top20 = NULL) {
     dplyr::mutate(dailyTPR7d = mean(dailyTPR7, na.rm = T),
                   dailyCFR7d = mean(dailyCFR7, na.rm = T)) %>%
     dplyr::filter(date == max(as.Date(date))) %>%
-    distinct(date, .keep_all = TRUE) %>%
-    ungroup() %>%
+    dplyr::distinct(date, .keep_all = TRUE) %>%
+    dplyr::ungroup() %>%
     dplyr::select(place, total_tests, ppt, dailyTPR7d, dailyCFR7d,
                   daily_cases, daily_deaths, daily_tests, total_cases, total_deaths) %>%
-    left_join(india_state_pop, by = c("place")) %>%
-    mutate(
-      place = case_when(
+    dplyr::left_join(india_state_pop, by = c("place")) %>%
+    dplyr::mutate(
+      place = dplyr::case_when(
         place == "India" ~ "National estimate",
         TRUE ~ place
       ),
       total_tested = trimws(format(total_tests, big.mark = ",")),
       ppt          = round(ppt * 100, digits = 2)
     ) %>%
-    left_join(vax_dat, by = c("place"))
+    dplyr::left_join(vax_dat, by = c("place"))
 
   # table ----------
   tib <- cfr1 %>%
     dplyr::distinct(place, .keep_all = TRUE) %>%
     dplyr::left_join(r_est %>%
-                       mutate(place = recode(place, "India" = "National estimate")),
+                       dplyr::mutate(place = recode(place, "India" = "National estimate")),
                      by = c("place")) %>%
     dplyr::left_join(tp %>%
                        extract_latest(cols = c("tpr")),
@@ -119,14 +121,14 @@ get_metrics_tables <- function(seed = 46342, top20 = NULL) {
                   `% pop. with at least one shot`)
 
   tib <- tib %>%
-    select(-`Total tested`) %>%
-    mutate(Location = case_when(
+    dplyr::select(-`Total tested`) %>%
+    dplyr::mutate(Location = case_when(
       Location == "National estimate" ~ "India",
       TRUE ~ Location)
     ) %>%
-    distinct() %>%
-    mutate_if(is.character, trimws) %>%
-    drop_na(`# daily new cases`) %>%
+    dplyr::distinct() %>%
+    dplyr::mutate_if(is.character, trimws) %>%
+    tidyr::drop_na(`# daily new cases`) %>%
     dplyr::filter(`# daily new cases` != "NA")
 
   source_note_text <- glue(

@@ -7,6 +7,8 @@
 #' @importFrom janitor clean_names
 #' @importFrom purrr map
 #' @importFrom tidyselect everything
+#' @importFrom tibble tibble
+#' @importFrom tibble add_column
 #' @examples
 #' \dontrun{
 #' get_nat_counts() %>%
@@ -53,6 +55,7 @@ estR0_out <- function(dat) {
 #' @param daily_filter Threshold for minimum daily cases. Default = `0`.
 #' @param total_filter Threshold for minimum total cases reported to date. Default = `50`.
 #' @param min_date Threshold for earliest date to report R_0. Default = `"2020-03-23"`.
+#' @param corr_check Check for data corrections of X-times magnitude. Default is `FALSE`
 #' @return Pulls the time-series state-level testing data directly from covid19india.org. Expects columns named `place`, `daily_cases`, and `total_cases`. Can specify corresponding variables through other arguments.
 #' @import dplyr
 #' @importFrom janitor clean_names
@@ -70,7 +73,8 @@ get_r0 <- function(
   total_var    = total_cases,
   daily_filter = 0,
   total_filter = 50,
-  min_date     = "2020-03-23"
+  min_date     = "2020-03-23",
+  corr_check   = FALSE
   ) {
 
   if ((deparse(substitute(place_var)) %in% names(dat)) == FALSE) {
@@ -88,15 +92,44 @@ get_r0 <- function(
                 "Check if `total_var` argument is correctly specified"))
   }
 
-  tmp_dat <- dat %>%
-    dplyr::filter({{ daily_var }} > daily_filter & {{ total_var }} >= total_filter) %>%
-    dplyr::group_by({{ place_var }}) %>%
-    dplyr::mutate(
-      ns = n()
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(ns >=7) %>%
-    dplyr::rename(daily_cases = {{ daily_var }}, place = {{ place_var }})
+  if(!is.null(corr_check) & is.logical(corr_check)) {
+
+    if(corr_check == TRUE) {
+
+      tmp_dat <- dat %>%
+        dplyr::filter({{ daily_var }} > daily_filter & {{ total_var }} >= total_filter) %>%
+        dplyr::group_by({{ place_var }}) %>%
+        dplyr::mutate(
+          ns = n()
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::filter(ns >=7) %>%
+        dplyr::rename(daily_cases = {{ daily_var }}, place = {{ place_var }}) %>%
+        tidyr::nest(data = !place) %>%
+        dplyr::mutate(
+          data = purrr::map(data, ~covid19india::check_for_data_correction(dat = .x))
+        ) %>%
+        tidyr::unnest(data)
+
+    } else {
+
+      tmp_dat <- dat %>%
+        dplyr::filter({{ daily_var }} > daily_filter & {{ total_var }} >= total_filter) %>%
+        dplyr::group_by({{ place_var }}) %>%
+        dplyr::mutate(
+          ns = n()
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::filter(ns >=7) %>%
+        dplyr::rename(daily_cases = {{ daily_var }}, place = {{ place_var }})
+
+    }
+
+  } else {
+
+    stop("corr_check must be TRUE/FALSE or set to NULL.")
+
+  }
 
   tmp_est <- suppressWarnings(tmp_dat %>%
     dplyr::select(date, daily_cases, place) %>%

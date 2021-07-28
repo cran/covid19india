@@ -2,7 +2,8 @@
 # covid19india
 
 <!-- badges: start -->
-![lifecycle](https://raw.githubusercontent.com/maxsal/covid19india/main/man/figures/lifecycle-experimental.svg)
+[![CRAN status](https://www.r-pkg.org/badges/version/covid19india)](https://CRAN.R-project.org/package=covid19india)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 `covid19india` is designed while working with data on COVID-19 in India. [covid19india.org](https://www.covid19india.org/) is 
@@ -17,10 +18,13 @@ Please share thoughts and comments with me: [mmsalva@umich.edu](mailto:mmsalva@u
 
 ## Installation
 
-You can install the development version of `covid19india` with:
-
 ``` r
-remotes::install_github("maxsal/covid19india", dependencies = TRUE)
+# Install the CRAN version
+install.packages("covid19india")
+
+# Or the development version from GitHub:
+# install.packages("remotes")
+remotes::install_github("maxsal/covid19india")
 ```
 
 ## Coming soon :movie_camera:
@@ -49,6 +53,9 @@ state_count %>% get_r0()
 
 ```
 ## Versions
+
+### Version 0.1.2
+* First CRAN submission! Find `covid19india` on CRAN @ [https://cran.r-project.org/package=covid19india](https://cran.r-project.org/package=covid19india)
 
 ### Version 0.1.1
 * ➕ ADD [`get_all_data()`](R/get_all_data.R) function to pull state and national level time-series count, testing, and vaccine data

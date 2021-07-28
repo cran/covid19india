@@ -4,12 +4,14 @@
 \alias{get_all_data}
 \title{Pull all covid19india count, test, and vaccine data for states and nation}
 \usage{
-get_all_data(keep_nat = TRUE, covind19_name_scheme = FALSE)
+get_all_data(keep_nat = TRUE, covind19_name_scheme = FALSE, corr_check = TRUE)
 }
 \arguments{
 \item{keep_nat}{Keep the national data as well. Default is \code{FALSE}}
 
 \item{covind19_name_scheme}{Variable naming scheme used for development of \href{https://umich-biostatistics.shinyapps.io/covid19/}{\code{covind19.org}} application}
+
+\item{corr_check}{Check for data corrections of X-times magnitude. Default is \code{TRUE}}
 }
 \value{
 Pulls the district-level time-series case, death, and recovered data directly from \href{https://www.covid19india.org}{\code{covid19india.org}}.

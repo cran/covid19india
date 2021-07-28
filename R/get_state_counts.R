@@ -2,6 +2,7 @@
 #' @param path The URL path for the data. Default: `https://api.covid19india.org/csv/latest/state_wise_daily.csv`
 #' @param raw Pull raw unaltered data. Default is `FALSE`
 #' @param keep_nat Keep the national data as well. Default is `FALSE`
+#' @param corr_check Check for data correction. Default is `FALSE`
 #' @return Pulls the time-series case, death, and recovered data directly from covid19india.org.
 #' @import dplyr
 #' @import tidyr
@@ -16,7 +17,8 @@
 get_state_counts <- function(
   path       = "https://api.covid19india.org/csv/latest/state_wise_daily.csv",
   raw        = FALSE,
-  keep_nat   = FALSE
+  keep_nat   = FALSE,
+  corr_check = FALSE
 ) {
 
   d <- readr::read_csv(path,
@@ -28,7 +30,7 @@ get_state_counts <- function(
       janitor::clean_names() %>%
       dplyr::select(-date) %>%
       dplyr::rename(
-        date         = date_ymd
+        date = date_ymd
       ) %>%
       dplyr::mutate(
         dh = dd + dn
@@ -59,7 +61,7 @@ get_state_counts <- function(
         total_deaths    = cumsum(daily_deaths)
       ) %>%
       dplyr::ungroup() %>%
-      dplyr::left_join(pop %>% dplyr::select(-population), by = "abbrev") %>%
+      dplyr::left_join(covid19india::pop %>% dplyr::select(-population), by = "abbrev") %>%
       dplyr::select(-abbrev) %>%
       dplyr::select(place, dplyr::everything())
 
@@ -73,6 +75,25 @@ get_state_counts <- function(
     if (raw == TRUE) {
       d <- d %>%
         dplyr::select(-TT)
+    }
+
+  }
+
+  if (corr_check == TRUE) {
+
+    if (raw == TRUE) {
+
+      stop("`raw` must be FALSE to use `corr_check = TRUE` argument")
+
+    } else {
+
+      d <- d %>%
+        tidyr::nest(data = !place) %>%
+        dplyr::mutate(
+          data = purrr::map(data, ~covid19india::check_for_data_correction(dat = .x))
+        ) %>%
+        tidyr::unnest(data)
+
     }
 
   }
