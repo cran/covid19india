@@ -25,7 +25,7 @@ Pull covid19india national time series data
 }
 \examples{
 \dontrun{
-get_nat_counts()
+get_nat_counts_dt()
 }
 
 }

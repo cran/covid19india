@@ -25,43 +25,33 @@ CFR <- function(C,D) {
 }
 
 #' Calculate case_fataility rate
-#' @param dat Input dataset. Expects `total_cases` and `total_deaths` variables
+#' @param x Input dataset. Expects `total_cases` and `total_deaths` variables
 #' @return Calculates a case-fatality rate estimate and corresponding 95% confidence interval
-#' @import dplyr
-#' @importFrom tibble tibble
+#' @import data.table
 #' @export
 #' @examples
 #' \dontrun{
-#' get_nat_counts() %>% get_cfr()
+#' get_cfr(x = get_nat_counts())
 #' }
 #'
 
-get_cfr <- function(dat) {
+get_cfr <- function(x) {
 
-  tmp <- dat %>%
-    dplyr::group_by(place) %>%
-    dplyr::filter(date == max(date)) %>%
-    dplyr::ungroup()
+  tmp <- x[x[, .I[date == max(date)], by = "place"]$V1][
+    , .(place, C = total_cases, D = total_deaths)]
 
-  tmp <- tmp %>%
-    dplyr::select(
-      place = place,
-      C     = total_cases,
-      D     = total_deaths
-    )
-
-  tmp_out <- tibble::tibble(
-    place = tmp$place,
-    cfr   = rep(0,nrow(tmp)),
-    upper = rep(0,nrow(tmp)),
-    lower = rep(0,nrow(tmp))
+  tmp_out <- data.table::data.table(
+    place = tmp[, place],
+    cfr   = rep(0, nrow(tmp)),
+    upper = rep(0, nrow(tmp)),
+    lower = rep(0, nrow(tmp))
   )
 
   for (i in 1:nrow(tmp_out)) {
     C <- tmp$C[i]
     D <- tmp$D[i]
 
-    result <- CFR(C,D)
+    result <- suppressWarnings(CFR(C,D))
 
     tmp_out$cfr[i]   <- result[1]
     tmp_out$upper[i] <- result[2]
@@ -69,13 +59,6 @@ get_cfr <- function(dat) {
 
   }
 
-  tmp_out %>%
-    dplyr::mutate(
-      place = case_when(
-        place == "India" ~ "National estimate",
-        TRUE ~ place
-      )
-    ) %>%
-    dplyr::distinct()
+  unique(tmp_out[, place := data.table::fcase(place == "India", "National estimate", place != "India", place)])
 
 }

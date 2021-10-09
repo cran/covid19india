@@ -4,10 +4,10 @@
 \alias{get_cfr}
 \title{Calculate case_fataility rate}
 \usage{
-get_cfr(dat)
+get_cfr(x)
 }
 \arguments{
-\item{dat}{Input dataset. Expects \code{total_cases} and \code{total_deaths} variables}
+\item{x}{Input dataset. Expects \code{total_cases} and \code{total_deaths} variables}
 }
 \value{
 Calculates a case-fatality rate estimate and corresponding 95\% confidence interval
@@ -17,7 +17,7 @@ Calculate case_fataility rate
 }
 \examples{
 \dontrun{
-get_nat_counts() \%>\% get_cfr()
+get_cfr(x = get_nat_counts())
 }
 
 }

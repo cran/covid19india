@@ -1,32 +1,27 @@
 #' Helper function
 #' @param dat data set
 #' @param group place variable
-#' @param cols columns to be extracted
+#' @param clmns columns to be extracted
 #' @return Data set of recent observations of selected variables
-#' @import dplyr
-#' @importFrom tidyselect all_of
+#' @import data.table
 #' @export
 #' @examples
 #' \dontrun{
-#' get_all_data() %>% extract_latest()
+#' extract_latest(dat = get_all_data())
 #' }
 
-extract_latest <- function(dat, group = place, cols = c("total_tests", "tpr", "dbl", "ppt")) {
+extract_latest <- function(dat, group = place, clmns = c("total_tests", "tpr", "ppt")) {
 
-  out <- dat %>%
-    dplyr::group_by({{ group }}) %>%
-    dplyr::filter(date == max(date)) %>%
-    dplyr::distinct(date, .keep_all = TRUE) %>%
-    dplyr::ungroup() %>%
-    dplyr::select({{ group }}, date, tidyselect::all_of(cols))
+  out <- dat[, .SD[date == max(date)], by = "place"]
+
+  out <- out[, c("place", "date", clmns), with = FALSE]
 
   if ("India" %in% out[[paste0(substitute(group))]]) {
 
-    out[[paste0(substitute(group))]] <- dplyr::recode(out[[paste0(substitute(group))]],
-                                               "India" = "National estimate")
+    out <- out[, place := data.table::fcase(place == "India", "National estimate", place != "India", place)]
 
   }
 
-  return(out)
+  return(out[])
 
 }

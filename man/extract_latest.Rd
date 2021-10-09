@@ -4,18 +4,14 @@
 \alias{extract_latest}
 \title{Helper function}
 \usage{
-extract_latest(
-  dat,
-  group = place,
-  cols = c("total_tests", "tpr", "dbl", "ppt")
-)
+extract_latest(dat, group = place, clmns = c("total_tests", "tpr", "ppt"))
 }
 \arguments{
 \item{dat}{data set}
 
 \item{group}{place variable}
 
-\item{cols}{columns to be extracted}
+\item{clmns}{columns to be extracted}
 }
 \value{
 Data set of recent observations of selected variables
@@ -25,6 +21,6 @@ Helper function
 }
 \examples{
 \dontrun{
-get_all_data() \%>\% extract_latest()
+extract_latest(dat = get_all_data())
 }
 }

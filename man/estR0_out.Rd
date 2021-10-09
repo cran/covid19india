@@ -2,23 +2,22 @@
 % Please edit documentation in R/get_r0.R
 \name{estR0_out}
 \alias{estR0_out}
-\title{Helper function for calculating R_0}
+\title{Helper function for calculating R_0 - data.table style}
 \usage{
-estR0_out(dat)
+estR0_out(x)
 }
 \arguments{
-\item{dat}{Input dataset}
+\item{x}{Input dataset}
 }
 \value{
 Pulls the time-series state-level testing data directly from covid19india.org.
 }
 \description{
-Helper function for calculating R_0
+Helper function for calculating R_0 - data.table style
 }
 \examples{
 \dontrun{
-get_nat_counts() \%>\%
-  estR0_out()
+estR0_out_dt(x = get_nat_counts())
 }
 
 }

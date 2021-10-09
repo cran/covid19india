@@ -22,6 +22,6 @@ Pull covid19india state-level testing data
 }
 \examples{
 \dontrun{
-get_state_counts()
+get_state_tests()
 }
 }

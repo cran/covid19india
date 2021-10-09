@@ -71,6 +71,9 @@ globalVariables(c(
   "total_doses_administered",
   "first_dose",
   "second_dose",
-  "where"
+  "where", "na.omit", "value", "DD", "DN", "DH",
+  "tested_as_of",
+  "total_samples_tested",
+  "sample_reported_today"
   )
   )

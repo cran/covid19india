@@ -21,9 +21,6 @@ Create metrics tables
 }
 \examples{
 \dontrun{
-dat <- get_all_data()
-cfr    <- get_cfr(dat) \%>\% distinct()
-r0_est <- get_r_est(dat)
 tabs   <- get_metrics_tables()
 
 tabs$full

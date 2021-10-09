@@ -2,10 +2,8 @@
 #' @param path The URL path for the data. Default: `https://api.covid19india.org/csv/latest/districts.csv`
 #' @param raw Pull raw unaltered data. Default is `FALSE`
 #' @return Pulls the district-level time-series case, death, and recovered data directly from covid19india.org.
-#' @import dplyr
-#' @import tidyr
+#' @import data.table
 #' @importFrom janitor clean_names
-#' @importFrom readr read_csv
 #' @export
 #' @examples
 #' \dontrun{
@@ -17,31 +15,32 @@ get_district_counts <- function(
   raw        = FALSE
 ) {
 
-  d <- readr::read_csv(path,
-                       col_types = readr::cols())
+  d <- data.table::fread(path, showProgress = FALSE)
 
   if (raw == FALSE) {
 
-    d <- d %>%
-      janitor::clean_names() %>%
-      dplyr::rename(
-        total_cases     = confirmed,
-        total_recovered = recovered,
-        total_deaths    = deceased
-      ) %>%
-      dplyr::filter(dplyr::select(., where(is.numeric)) >= 0) %>%
-      dplyr::group_by(state, district) %>%
-      dplyr::arrange(date) %>%
-      dplyr::mutate(
-        daily_cases     = total_cases - dplyr::lag(total_cases),
-        daily_recovered = total_recovered - dplyr::lag(total_recovered),
-        daily_deaths    = total_deaths - dplyr::lag(total_deaths)
-      ) %>%
-      tidyr::drop_na(daily_cases, daily_recovered, daily_deaths) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(state, district, date,
-                    daily_cases, daily_recovered, daily_deaths,
-                    total_cases, total_recovered, total_deaths)
+    setnames(d, names(d), janitor::make_clean_names(names(d)))
+    setnames(d, c("confirmed", "recovered", "deceased"), c("total_cases", "total_recovered", "total_deaths"))
+
+    d <- data.table::melt(d[, !c("other")], id.vars = c("date", "state", "district"))[value >= 0]
+
+    d <- data.table::dcast.data.table(d, date + state + district ~ variable)[order(date)][
+      , `:=` (
+        daily_cases     = total_cases - data.table::shift(total_cases),
+        daily_recovered = total_recovered - data.table::shift(total_recovered),
+        daily_deaths    = total_deaths - data.table::shift(total_deaths)
+      ), by = c("state", "district")
+    ][!is.na(daily_cases) & !is.na(daily_recovered) & !is.na(daily_deaths)][
+      , date := as.Date(date)
+    ][
+      , .(state, district, date,
+          daily_cases, daily_recovered, daily_deaths,
+          total_cases, total_recovered, total_deaths)
+    ]
+
+    d <- na.omit(d, c("daily_cases", "daily_recovered", "daily_deaths"))
+
+    setkeyv(d, cols = c("state", "district", "date"))
 
   }
 

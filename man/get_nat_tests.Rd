@@ -4,7 +4,10 @@
 \alias{get_nat_tests}
 \title{Pull covid19india national time series test data}
 \usage{
-get_nat_tests(path = "https://api.covid19india.org/data.json", raw = FALSE)
+get_nat_tests(
+  path = "https://data.covid19india.org/csv/latest/tested_numbers_icmr_data.csv",
+  raw = FALSE
+)
 }
 \arguments{
 \item{path}{The URL path for the data. Default: \verb{https://api.covid19india.org/data.json}}
